@@ -78,3 +78,23 @@ W wersji numpy `Wq=Wk=Wv=I` sprawiało że attention było atrapą — każdy to
 ## Dlaczego "toy"?
 
 Nadal ta sama sekwencja 7 tokenów i słownik 6 słów. Prawdziwy transformer, ale na zabawkowych danych.
+
+## Kodowanie pozycyjne a embeddingi
+
+`E` (embeddingi tokenów) to "co jestem" — uczony. `pos_enc` to "gdzie jestem" — stałe sinusoidy. Suma daje "co jestem i gdzie jestem":
+
+```
+E[ma]       = [-1.14,  1.39,  1.14, ...,  0.00,  0.00]   ← uczony, różny dla każdego tokenu
+pos_enc(1)  = [ 0.00,  0.00,  0.00, ...,  0.50,  0.87]   ← stały, różny dla każdej pozycji
+──────────────────────────────────────────────────────
+suma        = [-1.14,  1.39,  1.14, ...,  0.50,  0.87]   ← unikalny dla ("ma", pozycja 1)
+```
+
+```
+E[ma]       = [-1.14,  1.39,  1.14, ...,  0.00,  0.00]   ← ten sam embedding
+pos_enc(5)  = [ 0.00,  0.00,  0.00, ...,  0.50, -0.87]   ← inna pozycja, inny cos
+──────────────────────────────────────────────────────
+suma        = [-1.14,  1.39,  1.14, ...,  0.50, -0.87]   ← unikalny dla ("ma", pozycja 5)
+```
+
+Token `ma` pojawia się dwa razy w sekwencji — `E[ma]` jest zawsze identyczne, ale `pos_enc` różni się znakiem `cos`. Model widzi różne wektory i może poprowadzić je w różne strony — pierwszy "ma" → "kota", drugi "ma" → "Alę".
